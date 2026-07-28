@@ -114,6 +114,7 @@ class PersonDetectorNode(Node):
         self.consecutive_detections = 0
         self.consecutive_misses = 0
         self.person_present = False
+        self.interaction_active = False
 
         self.create_subscription(
             Image,
@@ -132,6 +133,12 @@ class PersonDetectorNode(Node):
             self.camera_info_topic,
             self.camera_info_callback,
             qos_profile_sensor_data,
+        )
+        self.create_subscription(
+            Bool,
+            '/interaction_active',
+            self.interaction_active_callback,
+            10,
         )
 
         self.detection_pub = self.create_publisher(
@@ -161,6 +168,12 @@ class PersonDetectorNode(Node):
     @staticmethod
     def stamp_to_seconds(stamp):
         return float(stamp.sec) + float(stamp.nanosec) * 1.0e-9
+
+    def interaction_active_callback(self, msg: Bool):
+        self.interaction_active = bool(msg.data)
+        if self.interaction_active:
+            self.person_present = True
+            self.consecutive_misses = 0
 
     def depth_callback(self, msg: Image):
         try:
@@ -271,6 +284,7 @@ class PersonDetectorNode(Node):
             self.get_logger().info('Person detected')
         elif (
             self.person_present
+            and not self.interaction_active
             and self.consecutive_misses >= self.hold_frames
         ):
             self.person_present = False
@@ -482,3 +496,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
