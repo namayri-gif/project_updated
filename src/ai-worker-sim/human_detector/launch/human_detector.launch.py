@@ -28,22 +28,37 @@ def generate_launch_description():
         name='wave_interact',
         output='screen',
         parameters=[{
-                'use_sim_time': True,
-                'map_frame': 'map',
-                'base_frame': 'base_link',
-                'stand_off_distance': 1.0,
-                'approach_skip_margin': 0.15,
-                'person_target_max_age': 1.0,
-                'base_linear_stop_threshold': 0.01,
-                'base_angular_stop_threshold': 0.02,
-                'base_stop_stable_duration': 0.50,
-                'base_stop_timeout': 8.0,
-                'arm_home_tolerance': 0.05,
-                'arm_home_stable_duration': 0.30,
-                'arm_home_timeout': 8.0,
-                'arm_controller_action': (
-                    '/arm_r_controller/follow_joint_trajectory'
-                ),
+            'use_sim_time': True,
+            'map_frame': 'map',
+            'base_frame': 'base_link',
+            'stand_off_distance': 1.0,
+            'approach_skip_margin': 0.15,
+            'person_target_max_age': 3.0,
+            'use_fixed_person_fallback': True,
+            'fixed_person_x': -1.465,
+            'fixed_person_y': -0.050,
+            'fixed_person_yaw': 3.123,
+            'cmd_vel_topic': '/cmd_vel',
+            'spin_action': '/spin',
+            'drive_on_heading_action': '/drive_on_heading',
+            'straight_approach_speed': 0.75,
+            'straight_approach_timeout_margin': 25.0,
+            'face_person_timeout': 15.0,
+            'face_person_yaw_tolerance': 0.06,
+            'face_person_max_angular_speed': 1.50,
+            'face_person_kp': 1.8,
+            'camera_yaw_offset': 0.0,
+            'base_linear_stop_threshold': 0.01,
+            'base_angular_stop_threshold': 0.02,
+            'base_stop_stable_duration': 0.50,
+            'base_stop_timeout': 8.0,
+            'arm_home_tolerance': 0.05,
+            'arm_home_stable_duration': 0.30,
+            'arm_home_timeout': 45.0,
+            'arm_trajectory_timeout': 120.0,
+            'arm_controller_action': (
+                '/arm_r_controller/follow_joint_trajectory'
+            ),
         }],
     )
 
@@ -65,7 +80,7 @@ def generate_launch_description():
             'nms_threshold': 0.40,
             'detection_hold_frames': 3,
             'publish_annotated': True,
-            'process_every_n_frames': 2,
+            'process_every_n_frames': 1,
             'network_input_size': 320,
             'depth_patch_radius': 10,
             'minimum_depth': 0.40,
@@ -74,12 +89,8 @@ def generate_launch_description():
         }],
     )
 
-    delayed_person_detector = TimerAction(
-        period=2.0,
-        actions=[person_detector],
-    )
-
     return LaunchDescription([
         wave_interact,
-        delayed_person_detector,
+        TimerAction(period=2.0, actions=[person_detector]),
     ])
+
